@@ -181,6 +181,20 @@ def index_to_tuple(node):
     values.append(None) # generated_on
     return Entry(*values)
 
+def remove_duplicates(entry_path):
+    """ Remove duplicate entries from the anime/manga lists. """
+    tree = ElementTree.parse(entry_path)
+    root = tree.getroot()
+
+    seen_ids = set()
+    for node in root:
+        entry_id = node.attrib['id']
+        if entry_id in seen_ids:
+            root.remove(node)
+        seen_ids.add(entry_id)
+
+    tree.write(entry_path, encoding='utf-8')
+
 def regenerate_database(path, db_name):
     """ Regenerates the database from the master database list and ANN api. """
     db_path = os.path.join(path, db_name)
@@ -205,6 +219,7 @@ def regenerate_database(path, db_name):
         entry_path = os.path.join(path, '{}.xml'.format(entry_type))
         if not os.path.exists(entry_path):
             continue
+        remove_duplicates(entry_path)
         tree = ElementTree.parse(entry_path)
         values = [entry_to_tuple(node) for node in tree.getroot()]
         update_entries(conn, values)
