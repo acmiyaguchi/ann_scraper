@@ -214,6 +214,10 @@ def regenerate_database(path, db_name):
     values = (index_to_tuple(node) for node in tree.findall('item'))
     insert_entries(conn, values)
 
+    # ignore entry 16857
+    invalid_entries = [16857]
+    conn.execute("delete from entry where entry.id=?", invalid_entries)
+
     # read locally cached entries into the database
     for entry_type in ('anime', 'manga'):
         entry_path = os.path.join(path, '{}.xml'.format(entry_type))
